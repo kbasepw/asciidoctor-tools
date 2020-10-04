@@ -1,9 +1,27 @@
+##
+# Makefile.inc - preconfigured goals for all available asciidoctor outputs.
+#
+# How to use:
+#
+# In your project create a Makefile with this content:
+# SRCS = <your main adoc file/s>
+# # additional arguments for asciidoctor (ex: custom extensions)
+# ASCIIDOCTOR_EXTRA_ARGS=--load-path lib/
+#
+# # install gems if not found
+# ifeq ($(shell find . -name vendor | wc -l), 0)
+# $(info installing gems...)
+# $(shell bundler install > /dev/null)
+# endif
+#
+# # include goals
+# TOOLS_DIR = $(shell bundler info asciidoctor-tools | grep "Path" | sed -e 's/Path://')
+# include $(TOOLS_DIR)/Makefile.inc
+##
 OUTPUT = dist
 DEPS_DIR = .deps
 ASCIIDOCTOR = asciidoctor
-ASCIIDOCTOR_ARGS = --load-path lib/ \
-									 --require   asciidoctor-tools \
-									 --attribute allow-uri-read
+ASCIIDOCTOR_ARGS = --require asciidoctor-tools --attribute allow-uri-read
 
 ifneq (,$(TARGET))
 ifeq ($(TARGET), html5)
@@ -56,7 +74,7 @@ help:
 	@echo -e "    mrproper               delete vendor folder plus clean goal."
 	@echo -e "    help                   this help message."
 	@echo -e ""
-	@echo -e " goals mark with an asterisc (*) are build by default."
+	@echo -e "NOTE: goals mark with an asterisc (*) are build by default."
 
 vendor:
 	@bundler install
@@ -82,7 +100,7 @@ __build: $(patsubst %.adoc, $(TARGET_PATTERN), $(SRCS))
 
 $(TARGET_PATTERN): $(patsubst $(TARGET_PATTERN), $(DEPS_DIR)/%$(DEPS_PATTERN), $@)
 	@echo -e "$(TARGET_UPPER) \e[1;32m$@\e[0m ..."
-	@bundler exec $(ASCIIDOCTOR) $(ASCIIDOCTOR_ARGS) -b $(TARGET) -D $(dir $@) $<
+	@bundler exec $(ASCIIDOCTOR) $(ASCIIDOCTOR_EXTRA_ARGS) $(ASCIIDOCTOR_ARGS) -b $(TARGET) -D $(dir $@) $<
 
 $(DEPS_DIR)/%$(DEPS_PATTERN): %.adoc vendor
 	@mkdir -p $(dir $@)
