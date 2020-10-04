@@ -28,21 +28,19 @@ jobs:
         run: |
           git config user.name    "ci system"
           git config user.email   "noreply@kbase.pw"
+          echo ":github: Bearer $GITHUB_TOKEN" > ~/.gem/credentials
+          chmod 0600 ~/.gem/credentials
 
-          readonly local commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
-          readonly local commits=$(eval $commits_request)
-
-          echo $commits
-
-          if [[ $(echo "${commits}" | wc -l) -eq 0 ]]
+          commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
+          if [[ $(eval "${commits_request}" | wc -l) -eq 0 ]]
           then
             echo "no new commits found!"
           else
-            if [[ $(echo "${commits}" | grep "BREAKING CHANGE" | wc -l) -gt 0 ]]
+            if [[ $(eval "${commits_request}" | grep "BREAKING CHANGE" | wc -l) -gt 0 ]]
             then
               bump_level=major
             else
-              if [[ $(echo "${commits}" | grep -E "feat(\(.*?\))?:" | wc -l) -gt 0 ]]
+              if [[ $(eval "${commits_request}" | grep -E "feat(\(.*?\))?:" | wc -l) -gt 0 ]]
               then
                 bump_level=minor
               else
@@ -50,9 +48,10 @@ jobs:
               fi
             fi
 
+            echo "version bump $bump_level"
             gem bump $bump_level --skip-ci --push --tag
-            echo ":github: Bearer $GITHUB_TOKEN" > ~/.gem/credentials
-            chmod 0600 ~/.gem/credentials
-            gem release --host https://rubygems.pkg.github.com/kbasepw --key github
           fi
+
+          echo "publishing gem..."
+          gem release --host https://rubygems.pkg.github.com/kbasepw --key github
 
