@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.platform      = Gem::Platform::RUBY
   s.require_paths = ['lib', 'bin']
   s.executables   = ["extract-dependencies"]
-  s.add_runtime_dependency "asciidoctor"
-  s.add_runtime_dependency "asciidoctor-pdf"
-  s.add_runtime_dependency "clamp"
+  s.add_runtime_dependency "asciidoctor", "2.0.10"
+  s.add_runtime_dependency "asciidoctor-pdf", "1.5.3"
+  s.add_runtime_dependency "clamp", "1.3.2"
 end
