@@ -16,6 +16,8 @@ jobs:
 
       - name: checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: install required gems
         run: gem install gem-release
@@ -24,10 +26,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "ci system"
-          git config user.email "noreply@kbase.pw"
+          git config user.name    "ci system"
+          git config user.email   "noreply@kbase.pw"
 
-          git pull --tags
           readonly local commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
           readonly local commits=$(eval $commits_request)
 
