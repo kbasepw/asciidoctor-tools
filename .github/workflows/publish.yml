@@ -22,14 +22,10 @@ jobs:
       - name: install required gems
         run: gem install gem-release
 
-      - name: bump gem version and publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: bump gem version
         run: |
           git config user.name    "ci system"
           git config user.email   "noreply@kbase.pw"
-          echo ":github: Bearer $GITHUB_TOKEN" > ~/.gem/credentials
-          chmod 0600 ~/.gem/credentials
 
           commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
           if [[ $(eval "${commits_request}" | wc -l) -eq 0 ]]
@@ -48,10 +44,17 @@ jobs:
               fi
             fi
 
+            echo ""
+            echo ""
             echo "version bump $bump_level"
             gem bump $bump_level --skip-ci --push --tag
           fi
 
-          echo "publishing gem..."
+      - name: publish package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo ":github: Bearer $GITHUB_TOKEN" > ~/.gem/credentials
+          chmod 0600 ~/.gem/credentials
           gem release --host https://rubygems.pkg.github.com/kbasepw --key github
 
