@@ -27,5 +27,3 @@ Asciidoctor::Extensions.register do
   preprocessor HighlightTodos
 end
 
-
-

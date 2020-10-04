@@ -15,4 +15,3 @@ Asciidoctor::Extensions.register do
   preprocessor InjectLicenseFooter
 end
 
-
