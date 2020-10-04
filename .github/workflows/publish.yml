@@ -32,6 +32,8 @@ jobs:
           readonly local commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
           readonly local commits=$(eval $commits_request)
 
+          echo $commits
+
           if [[ $(echo "${commits}" | wc -l) -eq 0 ]]
           then
             echo "no new commits found!"
