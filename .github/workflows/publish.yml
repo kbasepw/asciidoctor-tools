@@ -24,6 +24,7 @@ jobs:
 
       - name: bump gem version
         run: |
+          # bump gem version
           git config user.name    "ci system"
           git config user.email   "noreply@kbase.pw"
 
@@ -44,10 +45,10 @@ jobs:
               fi
             fi
 
-            echo ""
-            echo ""
             echo "version bump $bump_level"
-            gem bump $bump_level --skip-ci --push --tag
+            eval "${commits_request}"
+            echo ""
+            gem bump --version $bump_level --skip-ci --push --tag
           fi
 
       - name: publish package
