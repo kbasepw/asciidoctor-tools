@@ -27,6 +27,7 @@ jobs:
           git config user.name "ci system"
           git config user.email "noreply@kbase.pw"
 
+          git pull --tags
           readonly local commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
           readonly local commits=$(eval $commits_request)
 
