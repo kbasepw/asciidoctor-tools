@@ -1,5 +1,5 @@
 require "asciidoctor"
-require "roman-numerals"
+require "asciidoctor/tools/roman-numerals"
 
 class LicenseArticlesNumbering < Asciidoctor::Extensions::TreeProcessor
   def process document
