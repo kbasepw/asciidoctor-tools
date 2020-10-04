@@ -26,7 +26,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-
+          # configure environment script
           git config user.name    "ci system"
           git config user.email   "noreply@kbase.pw"
           echo ":github: Bearer $GITHUB_TOKEN" > ~/.gem/credentials
@@ -34,13 +34,13 @@ jobs:
 
       - name: bump gem version
         run: |
-
+          # bump gem version script
           commits_request="git log $(git describe --tags --abbrev=0)..HEAD --oneline"
           if [[ $(eval "${commits_request}" | wc -l) -eq 0 ]]
           then
             echo "no new commits found!"
           else
-            if [[ $(eval "${commits_request}" | grep "BREAKING CHANGE" | wc -l) -gt 0 ]]
+            if [[ $(eval "${commits_request}" | grep -E "\[release\]|BREAKING CHANGE" | wc -l) -gt 0 ]]
             then
               bump_level=major
             else
