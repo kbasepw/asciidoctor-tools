@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+require "bundler/setup"
+require "asciidoctor"
+require "clamp"
+
+class Context
+  attr_accessor :working_directory, :dependencies
+
+  def initialize
+    @dependencies = Array.new
+  end
+
+  def add_dependency relative_path
+    @dependencies.push File.expand_path relative_path, working_directory
+  end
+end
+
+class DependencyScanerTreeProcessor < Asciidoctor::Extensions::TreeProcessor
+  (TAGS=[
+    "link:",
+    "image:",
+    "include::"
+  ])
+
+  def process document
+    return unless document.blocks?
+    process_blocks document
+    nil
+  end
+
+  def process_blocks node
+    node.blocks.each do |block|
+      if block.respond_to? :lines
+        block.lines.each do |line|
+          process_line line
+        end
+      end
+
+      process_blocks block if block.blocks?
+    end
+  end
+
+  def process_line line
+    TAGS.each do |tag|
+      if line.start_with? tag
+        ref = line[(tag.length)..(line.index("[") - 1)]
+        uri = URI.parse ref
+        config[:context].add_dependency ref unless uri.scheme and uri.scheme != "file"
+      end
+    end
+  end
+end
+
+def extract_dependencies input_file, recursive
+  input_file_path = File.absolute_path input_file
+  context = Context.new
+  context.working_directory = File.dirname input_file_path
+
+  Asciidoctor::Extensions.unregister_all
+  Asciidoctor::Extensions.register do
+    treeprocessor DependencyScanerTreeProcessor, { context: context }
+  end
+
+  Asciidoctor.convert_file input_file_path, safe: :secure, to_file: false
+  
+  if recursive?
+    child_documents = context.dependencies.select {|dependency| dependency.end_with? ".adoc" }
+    child_documents.each do |child|
+      child_dependencies = extract_dependencies child, recursive
+      context.dependencies = context.dependencies + child_dependencies
+    end
+  end
+
+  context.dependencies
+end
+
+Clamp.allow_options_after_parameters = true
+Clamp do
+  option %w[-r --recursive], :flag, "extract dependencies recursively.", attribute_name: :recursive
+  parameter "FILE", "the document file to extract dependencies for.", required: true, attribute_name: :input_file
+
+  def execute
+    dependencies = extract_dependencies input_file, recursive?
+    puts dependencies
+  end
+end
+
